@@ -24,6 +24,28 @@ enum WireError: Error, Equatable {
     case invalidUTF8(offset: Int)
     case invalidDiscriminant(type: String, value: UInt8)
     case validation(String)
+    case invalidBatchChecksum(stored: UInt64, computed: UInt64)
+    case invalidMessageChecksum(stored: UInt64, computed: UInt64, offset: UInt64)
+
+    /// The error a reply decoder surfaces. An unreadable body maps onto
+    /// `invalidCommand`, the code the Rust client raises for the same class,
+    /// so callers matching on the code see one value across SDKs.
+    var iggyError: IggyError {
+        switch self {
+        case .truncated(let offset, let need, let have):
+            IggyError(.invalidCommand, context: "unexpected end of buffer at offset \(offset): need \(need) bytes, have \(have)")
+        case .invalidUTF8(let offset):
+            IggyError(.invalidUtf8, context: "invalid utf-8 at offset \(offset)")
+        case .invalidDiscriminant(let type, let value):
+            IggyError(.invalidCommand, context: "unknown discriminant \(value) for \(type)")
+        case .validation(let message):
+            IggyError(.invalidCommand, context: message)
+        case .invalidBatchChecksum(let stored, let computed):
+            IggyError(.invalidBatchChecksum, context: "stored \(stored), computed \(computed)")
+        case .invalidMessageChecksum(let stored, let computed, let offset):
+            IggyError(.invalidMessageChecksum, context: "stored \(stored), computed \(computed), offset \(offset)")
+        }
+    }
 }
 
 /// Little-endian append-only encoder over a byte array.
@@ -37,6 +59,8 @@ struct ByteWriter {
         bytes = []
         bytes.reserveCapacity(capacity)
     }
+
+    var count: Int { bytes.count }
 
     mutating func write(_ value: UInt8) {
         bytes.append(value)
@@ -77,6 +101,18 @@ struct ByteWriter {
 
     mutating func write(_ value: String) {
         bytes.append(contentsOf: value.utf8)
+    }
+
+    mutating func writeZeros(_ count: Int) {
+        bytes.append(contentsOf: repeatElement(0, count: count))
+    }
+
+    /// Replaces the `value.count` bytes starting at `offset` with `value`,
+    /// which the batch encoder uses to patch checksums into a header it has
+    /// already written. The range must lie inside the bytes written so far;
+    /// a range past the end is a programming error and traps.
+    mutating func overwrite(at offset: Int, with value: [UInt8]) {
+        bytes.replaceSubrange(offset..<offset + value.count, with: value)
     }
 
     /// `[len: u8][utf8]`, the layout of every wire name, which must be 1 to
@@ -184,6 +220,14 @@ struct ByteReader {
         }
         return try readString(length)
     }
+
+    mutating func skip(_ count: Int) throws {
+        try require(count)
+        offset += count
+    }
+
+    /// The bytes not yet consumed, without consuming them.
+    var rest: ArraySlice<UInt8> { bytes[offset...] }
 
     /// `[len: u32][utf8]`.
     mutating func readLongString() throws -> String {
