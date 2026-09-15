@@ -156,6 +156,7 @@ We also publish edge releases (versions with an `-edge.N` suffix, and `apache/ig
 - [Python](https://pypi.org/project/apache-iggy/)
 - [Node.js (TypeScript)](https://www.npmjs.com/package/apache-iggy)
 - [Go](https://pkg.go.dev/github.com/apache/iggy/foreign/go)
+- [Swift](https://github.com/apache/iggy/tree/master/foreign/swift)
 
 [C++](https://github.com/apache/iggy/tree/master/foreign/cpp) and [PHP](https://github.com/apache/iggy/tree/master/foreign/php) are work in progress.
 

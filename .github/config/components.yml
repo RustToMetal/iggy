@@ -460,6 +460,21 @@ components:
       - "bdd/scenarios/**"
     tasks: ["bdd-cpp"]
 
+  bdd-swift:
+    depends_on:
+      - "rust-server"
+      - "rust-sdk"
+      - "sdk-swift"
+      - "bdd-infrastructure"
+      - "ci-infrastructure"
+    paths:
+      - "bdd/swift/**"
+      - "bdd/scenarios/**"
+      # The Swift suite runs against the VSR server, so its sources gate it.
+      - "core/binary_protocol/**"
+      - "core/server/**"
+    tasks: ["bdd-swift"]
+
   examples-rust:
     depends_on:
       - "rust-sdk"
@@ -542,6 +557,18 @@ components:
       - "scripts/run-examples-from-readme.sh"
       - "scripts/utils.sh"
     tasks: ["examples-java"]
+
+  examples-swift:
+    depends_on:
+      - "rust-server"
+      - "rust-sdk" # All SDKs depend on core SDK changes
+      - "sdk-swift"
+      - "ci-infrastructure"
+    paths:
+      - "examples/swift/**"
+      - "scripts/run-examples-from-readme.sh"
+      - "scripts/utils.sh"
+    tasks: ["examples-swift"]
 
   web-ui:
     paths:
