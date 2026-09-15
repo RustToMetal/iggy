@@ -34,6 +34,12 @@ bdd/swift/**/.build
 bdd/swift/**/.swiftpm
 # A standalone dev tool with path dependencies on the workspace crates.
 foreign/swift/Tools/golden-vectors/Cargo.lock
+examples/swift/.build
+examples/swift/**/.build
+examples/swift/**/.swiftpm
+bdd/swift/.build
+bdd/swift/**/.build
+bdd/swift/**/.swiftpm
 foreign/node/npm-debug.log*
 foreign/node/.npm
 **/node_modules
