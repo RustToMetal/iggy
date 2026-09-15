@@ -39,6 +39,17 @@ struct ErrorCodeTests {
         #expect(Set(IggyErrorCode.allCases.map(\.name)).count == IggyErrorCode.allCases.count)
     }
 
+    /// The full table, against the dump the Rust generator takes from the
+    /// server's error enum.
+    @Test func errorCodesMatchTheServerTable() {
+        let golden = GoldenFixture.shared
+        let known = Dictionary(uniqueKeysWithValues: IggyErrorCode.allCases.map { ($0.rawValue, $0.name) })
+        #expect(known.count == golden.errors.count)
+        for entry in golden.errors {
+            #expect(known[entry.code] == entry.name, "code \(entry.code)")
+        }
+    }
+
     @Test func unknownWireCodesKeepTheRawValue() {
         let error = IggyError(wireCode: 65_535)
         #expect(error.code == .error)
