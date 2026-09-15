@@ -142,6 +142,12 @@ enum VSRFrame {
         return EncodedRequest(bytes: frame, requestID: requestID, operation: operation)
     }
 
+    /// Reads the request id back out of a stamped request frame, which the
+    /// connection matches replies against.
+    static func stampedRequestID(_ frame: [UInt8]) -> UInt64 {
+        UInt64(littleEndianBytes: frame[RequestOffset.request..<RequestOffset.request + 8])
+    }
+
     /// Reads the total frame length, header included, from any consensus
     /// header. Returns nil when the buffer is too short.
     static func readSize(_ header: ArraySlice<UInt8>) -> UInt32? {

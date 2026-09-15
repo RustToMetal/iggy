@@ -194,6 +194,10 @@ public struct PolledMessages: Sendable, Hashable {
     /// Partition id of an empty poll by a consumer-group member that currently
     /// holds no partitions: `NO_ASSIGNED_PARTITION` in `core/common`.
     public static let noAssignedPartition: UInt32 = UInt32.max - 1
+    /// Partition id of an empty poll that tells the member to re-sync its
+    /// assignment, the coordinator moved to a new generation:
+    /// `RESYNC_REQUIRED_PARTITION_SENTINEL` in `core/common`.
+    static let resyncRequiredPartition: UInt32 = UInt32.max
 }
 
 /// One confirmation of a committed batch.
