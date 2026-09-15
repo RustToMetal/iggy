@@ -62,6 +62,8 @@ func expectCode(_ code: IggyErrorCode, sourceLocation: SourceLocation = #_source
         Issue.record("expected \(code) but nothing was thrown", sourceLocation: sourceLocation)
     } catch let error as IggyError {
         #expect(error.code == code, "expected \(code), got \(error)", sourceLocation: sourceLocation)
+    } catch let error as ProducerSendError {
+        #expect(error.cause.code == code, "expected \(code), got \(error)", sourceLocation: sourceLocation)
     } catch {
         Issue.record("expected \(code), got \(error)", sourceLocation: sourceLocation)
     }
