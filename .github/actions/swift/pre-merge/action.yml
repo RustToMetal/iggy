@@ -37,8 +37,13 @@ runs:
       shell: bash
       if: inputs.task == 'lint'
       run: |
-        cd foreign/swift
-        swift format lint --strict --recursive Sources Tests Package.swift
+        for dir in foreign/swift examples/swift/getting-started bdd/swift/tests; do
+          echo "Checking formatting in $dir..."
+          swift format lint --strict --recursive --configuration foreign/swift/.swift-format "$dir/Sources" "$dir/Package.swift"
+          if [ -d "$dir/Tests" ]; then
+            swift format lint --strict --recursive --configuration foreign/swift/.swift-format "$dir/Tests"
+          fi
+        done
 
     # A warning-free build is the lint gate the Swift compiler provides: the
     # SDK builds in Swift 6 language mode with strict concurrency checking.
@@ -64,6 +69,12 @@ runs:
       run: |
         cd foreign/swift
         swift build -c release
+
+        cd ../../examples/swift/getting-started
+        swift build
+
+        cd ../../../bdd/swift/tests
+        swift build
 
     - name: Setup Rust with cache for e2e
       if: inputs.task == 'e2e'

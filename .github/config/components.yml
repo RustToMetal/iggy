@@ -342,6 +342,8 @@ components:
       - "ci-infrastructure" # CI changes trigger full regression
     paths:
       - "foreign/swift/**"
+      - "bdd/swift/**"
+      - "examples/swift/**"
       # The SDK compiles against the VSR wire contract, so a change to the
       # protocol crate or the VSR server must rerun it.
       - "core/binary_protocol/**"
@@ -457,6 +459,20 @@ components:
       - "bdd/scenarios/**"
     tasks: ["bdd-cpp"]
 
+  bdd-swift:
+    depends_on:
+      - "rust-server"
+      - "rust-sdk"
+      - "sdk-swift"
+      - "bdd-infrastructure"
+      - "ci-infrastructure"
+    paths:
+      - "bdd/swift/**"
+      - "bdd/scenarios/**"
+      # The Swift suite runs against the VSR server, so its sources gate it.
+      - "core/binary_protocol/**"
+      - "core/server/**"
+    tasks: ["bdd-swift"]
 
   examples-rust:
     depends_on:
@@ -541,6 +557,17 @@ components:
       - "scripts/utils.sh"
     tasks: ["examples-java"]
 
+  examples-swift:
+    depends_on:
+      - "rust-server"
+      - "rust-sdk" # All SDKs depend on core SDK changes
+      - "sdk-swift"
+      - "ci-infrastructure"
+    paths:
+      - "examples/swift/**"
+      - "scripts/run-examples-from-readme.sh"
+      - "scripts/utils.sh"
+    tasks: ["examples-swift"]
 
   web-ui:
     paths:
