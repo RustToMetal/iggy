@@ -45,14 +45,19 @@ struct ConsensusSession: Sendable {
     var isBound: Bool { session != nil }
 
     /// Arms the session for a Register and returns its request id, always 0.
-    /// A session that already registered or bound is replaced wholesale with a
-    /// fresh client identifier, so a re-login encodes a clean Register.
     mutating func beginRegister() -> UInt64 {
+        renewIfUsed()
+        registerConsumed = true
+        return 0
+    }
+
+    /// Replaces a session that already registered or bound with a fresh client
+    /// identifier and bind secret, so a re-login encodes a clean Register. The
+    /// login body carries the secret, so the client renews before building it.
+    mutating func renewIfUsed() {
         if registerConsumed || isBound {
             self = ConsensusSession()
         }
-        registerConsumed = true
-        return 0
     }
 
     /// Records the session fence the server assigned when Register committed.
