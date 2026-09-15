@@ -21,4 +21,22 @@ extension IggyClient {
     public func producer(stream: Identifier, topic: Identifier, configuration: ProducerConfiguration = ProducerConfiguration()) -> IggyProducer {
         IggyProducer(client: self, stream: stream, topic: topic, configuration: configuration)
     }
+
+    /// A standalone consumer named `name`, reading `partition` of the topic.
+    public func consumer(
+        name: String, stream: Identifier, topic: Identifier, partition: UInt32, configuration: ConsumerConfiguration = ConsumerConfiguration()
+    ) throws -> IggyConsumer {
+        IggyConsumer(
+            client: self, name: name, consumer: .consumer(try Identifier(named: name)), stream: stream, topic: topic, partition: partition,
+            configuration: configuration)
+    }
+
+    /// A member of the consumer group `name`, which ``IggyConsumer/initialize()``
+    /// creates and joins as configured.
+    public func consumerGroup(
+        name: String, stream: Identifier, topic: Identifier, configuration: ConsumerConfiguration = ConsumerConfiguration()
+    ) throws -> IggyConsumer {
+        IggyConsumer(
+            client: self, name: name, consumer: .group(try Identifier(named: name)), stream: stream, topic: topic, partition: nil, configuration: configuration)
+    }
 }
