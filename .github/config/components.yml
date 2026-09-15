@@ -343,9 +343,11 @@ components:
     paths:
       - "foreign/swift/**"
       # The SDK compiles against the VSR wire contract, so a change to the
-      # protocol crate must rerun it.
+      # protocol crate or the VSR server must rerun it.
       - "core/binary_protocol/**"
-    tasks: ["lint", "test", "build"]
+      - "core/server/**"
+    # VSR is the only protocol the Swift SDK speaks, so there is no separate lane.
+    tasks: ["lint", "test", "build", "e2e"]
 
   # Shared BDD infrastructure that affects all BDD tests
   bdd-infrastructure:

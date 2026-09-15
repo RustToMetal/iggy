@@ -48,8 +48,16 @@ let package = Package(
         ),
         .testTarget(
             name: "IggyTests",
-            dependencies: ["Iggy"],
+            dependencies: [
+                "Iggy",
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+            ],
             resources: [.copy("Fixtures")]
+        ),
+        .testTarget(
+            name: "IggyE2ETests",
+            dependencies: ["Iggy"]
         ),
     ],
     swiftLanguageModes: [.v6]
