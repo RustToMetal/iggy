@@ -22,6 +22,7 @@ import Foundation
 enum WireError: Error, Equatable {
     case truncated(offset: Int, need: Int, have: Int)
     case invalidUTF8(offset: Int)
+    case invalidDiscriminant(type: String, value: UInt8)
     case validation(String)
 }
 
@@ -214,5 +215,26 @@ extension UInt64 {
     /// Decodes the first eight bytes of `bytes`, which the caller has bounds-checked.
     init(littleEndianBytes bytes: ArraySlice<UInt8>) {
         self = bytes.withUnsafeBytes { UInt64(littleEndian: $0.loadUnaligned(as: UInt64.self)) }
+    }
+}
+
+extension UInt16 {
+    /// Little-endian wire bytes, the layout user header values carry.
+    var littleEndianBytes: [UInt8] {
+        withUnsafeBytes(of: littleEndian) { Array($0) }
+    }
+}
+
+extension UInt32 {
+    /// Little-endian wire bytes, the layout user header values carry.
+    var littleEndianBytes: [UInt8] {
+        withUnsafeBytes(of: littleEndian) { Array($0) }
+    }
+}
+
+extension UInt64 {
+    /// Little-endian wire bytes, the layout user header values carry.
+    var littleEndianBytes: [UInt8] {
+        withUnsafeBytes(of: littleEndian) { Array($0) }
     }
 }
