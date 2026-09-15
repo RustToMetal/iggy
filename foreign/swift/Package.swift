@@ -48,7 +48,8 @@ let package = Package(
         ),
         .testTarget(
             name: "IggyTests",
-            dependencies: ["Iggy"]
+            dependencies: ["Iggy"],
+            resources: [.copy("Fixtures")]
         ),
     ],
     swiftLanguageModes: [.v6]
