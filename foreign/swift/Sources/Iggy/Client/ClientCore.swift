@@ -546,7 +546,11 @@ actor ClientCore {
         setState(.disconnected)
         let old = connection
         connection = nil
-        resetSession()
+        // A Register still in flight is retried on the next connection and
+        // must arrive under the identity and secret its body was built from.
+        if session.isBound {
+            resetSession()
+        }
         await old?.close()
         publish(.disconnected)
     }
@@ -628,9 +632,8 @@ actor ClientCore {
         if state == .authenticated {
             try await logout()
         }
-        // The login body carries the session's bind secret, so the identity
-        // the frame encoder would otherwise mint is settled before it is built.
-        session.renewIfUsed()
+        // The login body carries the bind secret of the session the frame
+        // encoder registers, and both survive a retry on a new connection.
         let payload = try makePayload(session.bindSecret)
         let body: [UInt8]
         do {
