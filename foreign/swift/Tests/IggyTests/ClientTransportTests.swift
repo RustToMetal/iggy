@@ -350,6 +350,34 @@ struct ClientTransportTests {
         try await client.shutdown()
     }
 
+    /// The body of a login is built once, with the bind secret of the session
+    /// that registers. A retry on a new connection has to arrive under that
+    /// same client id, or the server binds the secret to the wrong session.
+    @Test func loginRetriedAfterAConnectionDropKeepsItsIdentityAndSecret() async throws {
+        let server = try await FakeVSRServer.started()
+        defer { Task { await server.stop() } }
+        let once = Locked(true)
+        await server.respond { request in
+            guard request.operation == .register else { return .ok([]) }
+            let first = once.withLock {
+                let first = $0; $0 = false; return first
+            }
+            return first ? .close : .ok(FakeVSRServer.registerBody())
+        }
+        let client = makeClient(server, autoLogin: nil)
+        try await client.connect()
+        _ = try await client.login(username: "iggy", password: "iggy")
+        #expect(await client.state == .authenticated)
+        let registers = await server.requests.filter { $0.operation == .register }
+        #expect(registers.count == 2)
+        #expect(registers[0].connection != registers[1].connection)
+        #expect(registers[0].clientID == registers[1].clientID)
+        let secrets = registers.compactMap { Self.bindSecret(in: $0.payload) }
+        #expect(secrets.count == 2)
+        #expect(secrets[0] == secrets[1])
+        try await client.shutdown()
+    }
+
     @Test func nonReplicatedRequestIsReplayedAfterAConnectionDrop() async throws {
         let server = try await FakeVSRServer.started()
         defer { Task { await server.stop() } }
