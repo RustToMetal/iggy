@@ -632,6 +632,11 @@ actor ClientCore {
         if state == .authenticated {
             try await logout()
         }
+        // A connection lost under a bound session leaves that session behind.
+        // The sign-in on the next one registers a new session, not a replay.
+        if session.isBound {
+            session.reset()
+        }
         // The login body carries the bind secret of the session the frame
         // encoder registers, and both survive a retry on a new connection.
         let payload = try makePayload(session.bindSecret)
